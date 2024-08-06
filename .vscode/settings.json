@@ -1,0 +1,9 @@
+{
+    "python.analysis.extraPaths": [
+        "src/lib"
+    ],
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "cmake.configureOnOpen": true
+}

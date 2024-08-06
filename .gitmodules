@@ -1,0 +1,3 @@
+[submodule "modules/lv_micropython"]
+	path = modules/lv_micropython
+	url = git@github.com:lvgl/lv_micropython.git

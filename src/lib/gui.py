@@ -167,7 +167,7 @@ class WifiScreen:
 
 class AirQualityScreen:
     def __init__(self):
-        self._screen = lv.obj()
+        self._screen = lv.screen_active()
 
         self._h_res = lv.screen_active().get_display().get_horizontal_resolution()
         self._v_res = lv.screen_active().get_display().get_vertical_resolution()

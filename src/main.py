@@ -11,8 +11,8 @@ SCL = micropython.const(22)
 UART = micropython.const(2)
 
 CURRENT_READING = {}
-
-pms = Pms7003(UART)
+pms = None
+#pms = Pms7003(UART)
 
 def update_current_reading(__):
     global CURRENT_READING

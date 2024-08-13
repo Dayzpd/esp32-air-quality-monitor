@@ -1,9 +1,11 @@
 
 
 import machine
+import micropython
 import struct
 import time
 
+import utils
 
 class UartError(Exception):
     pass
@@ -35,9 +37,13 @@ class Pms7003:
         tx: int = None,
         **kwargs
     ) -> None:
-        
+
+        self._awake = True
+
         self.uart = machine.UART(
             uart,
+            rx=rx,
+            tx=tx,
             baudrate=9600,
             bits=8,
             parity=None,
@@ -45,10 +51,10 @@ class Pms7003:
             **kwargs
         )
 
-        self._passive_mode()
+        self.passive_mode()
 
-        self.sleep()
-        
+        self.standby()
+
     def __repr__(self):
         return "Pms7003({})".format(self.uart)
 
@@ -74,7 +80,7 @@ class Pms7003:
             buffer = self.uart.read(len(response))
 
             if buffer != response:
-                
+
                 expected_response = (
                     Pms7003._format_bytearray(response)
                     if isinstance(response, (bytearray))
@@ -92,24 +98,32 @@ class Pms7003:
                         expected_response, actual_response
                     )
                 )
-        
-    def _passive_mode(self):
+
+    def passive_mode(self):
 
         try:
             self._send_cmd(
                 request=bytearray([0x42, 0x4D, 0xE1, 0x00, 0x00, 0x01, 0x70]),
                 response=bytearray([0x42, 0x4D, 0x00, 0x04, 0xE1, 0X00, 0x01, 0x74]),
             )
-        except:
-            pass
+        except Exception as err:
+            utils.log_error("Passive mode error.", err)
 
 
-    def sleep(self):
+    def standby(self):
 
-        self._send_cmd(
-            request=bytearray([0x42, 0x4D, 0xE4, 0x00, 0x00, 0x01, 0x73]),
-            response=bytearray([0x42, 0x4D, 0x00, 0x04, 0xE4, 0X00, 0x01, 0x77]),
-        )
+        if not self._awake:
+            return
+
+        try:
+            self._send_cmd(
+                request=bytearray([0x42, 0x4D, 0xE4, 0x00, 0x00, 0x01, 0x73]),
+                response=bytearray([0x42, 0x4D, 0x00, 0x04, 0xE4, 0X00, 0x01, 0x77]),
+            )
+        except Exception as err:
+            utils.log_error("Standby error.", err)
+
+        self._awake = False
 
     def send_read_instruction(self):
 
@@ -120,25 +134,26 @@ class Pms7003:
 
     def wakeup(self):
 
+        if self._awake:
+            return
+
         self._send_cmd(
             request=bytearray([0x42, 0x4D, 0xE4, 0x00, 0x01, 0x01, 0x74]),
             response=None,
         )
+
+        self._awake = True
 
     def read(self):
 
         while True:
 
             first_byte = self.uart.read(1)
-            print(f"First Byte: {first_byte}")
             if not self._assert_byte(first_byte, Pms7003.START_BYTE_1):
-                print("ugh shit")
                 continue
 
             second_byte = self.uart.read(1)
-            print(f"First Byte: {second_byte}")
             if not self._assert_byte(second_byte, Pms7003.START_BYTE_2):
-                print("ugh shit pt2")
                 continue
 
             # we are reading 30 bytes left
@@ -171,3 +186,52 @@ class Pms7003:
                 'ERROR': data[Pms7003.PMS_ERROR],
                 'CHECKSUM': data[Pms7003.PMS_CHECKSUM],
             }
+
+    def passive_read(self, delay=10):
+
+        self.wakeup()
+
+        time.sleep(delay)
+
+        self.send_read_instruction()
+
+        time.sleep(1)
+
+        data = self.read()
+
+        self.standby()
+
+        return data
+
+TX = micropython.const(17) # Connects to Sensor RX
+RX = micropython.const(18) # Connects to Sensor TX
+UART = micropython.const(2)
+
+CURRENT_READING = {}
+sensor = None
+
+
+def init():
+    global sensor
+
+    try:
+
+        sensor = Pms7003(uart=UART, tx=TX, rx=RX)
+
+        print("Successfully initialized PMS7003 sensor!")
+
+    except Exception as err:
+
+        msg = "Failed to initialize PMS7003 sensor..."
+
+        utils.log_error(msg, err)
+
+def read(__=None):
+    global CURRENT_READING
+
+    CURRENT_READING = sensor.passive_read(delay=60)
+
+    for k,v in CURRENT_READING.items():
+        print(f"{k}: {v}")
+
+# import pms7003 as pms; pms.init(); pms.read();

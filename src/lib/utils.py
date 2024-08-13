@@ -5,6 +5,10 @@ def debug(ev, filt):
     for k in dir(ev):
         if filt in k: print(f"{k}: {getattr(ev, k)}")
 
+def log_error(msg, err):
+    print(msg)
+    sys.print_exception(err)
+
 def stacktrace(func):
     def wrapper(*a, **kw):
         try:

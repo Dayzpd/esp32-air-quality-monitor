@@ -2,10 +2,10 @@
 import binascii
 import network
 import time
-import webrepl
 
 import display_driver
-
+#import pms7003 as pms
+#import gas
 
 WIFI_SSID = ""
 WIFI_PASSWORD = ""
@@ -53,3 +53,5 @@ def connect_wifi(
 if __name__ == "__main__":
     connect_wifi(WIFI_SSID, WIFI_PASSWORD)
     display_driver.init()
+    #pms.init()
+    #gas.init()

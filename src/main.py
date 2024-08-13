@@ -6,41 +6,10 @@ import time
 
 from pms7003 import Pms7003
 
-SDA = micropython.const(21)
-SCL = micropython.const(22)
-UART = micropython.const(2)
-
-CURRENT_READING = {}
-pms = None
-#pms = Pms7003(UART)
-
-def update_current_reading(__):
-    global CURRENT_READING
-    
-    
-    pms.wakeup()
-
-    time.sleep(10)
-
-    pms.send_read_instruction()
-
-    time.sleep(5)
-
-    pms.read()
-
-    time.sleep(5)
-
-    pms.send_read_instruction()
-
-    time.sleep(5)
-
-    CURRENT_READING = pms.read()
-
-    pms.sleep()
 
 
 def web_server():
-            
+
     # Set up socket for web server
     addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
     s = socket.socket()
@@ -77,4 +46,3 @@ if __name__ == "__main__":
     #    callback=lambda __: micropython.schedule(update_current_reading, 0)
     #)
     #web_server()
-    

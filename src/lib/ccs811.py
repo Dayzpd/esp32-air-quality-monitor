@@ -12,7 +12,9 @@ from machine import Pin, SoftI2C
 import time
 import micropython
 
-class CCS811(object):
+import utils
+
+class CCS811:
     """CCS811 gas sensor. Measures eCO2 in ppm and TVOC in ppb"""
 
     def __init__(self, i2c=None, addr=90):
@@ -75,7 +77,7 @@ class CCS811(object):
         register[0] = HB
         register[1] = LB
         self.i2c.writeto_mem(self.addr,0x11,register)
-    
+
     def put_envdata(self,humidity,temp):
         envregister = bytearray([0x00,0x00,0x00,0x00])
         envregister[0] = int(humidity) << 1
@@ -89,35 +91,48 @@ class CCS811(object):
         self.i2c.writeto_mem(self.addr,0x05,envregister)
         #return envregister
 
-SCL = micropython.const(25)
-SDA = micropython.const(26)
+sensor = None
+CURRENT_READING = {}
 
-def get_css811():
-    
-    i2c = SoftI2C(scl=Pin(SCL), sda=Pin(SDA))
-    i2c_devs = i2c.scan()
+SCL = micropython.const(48)
+SDA = micropython.const(47)
 
-    if len(i2c_devs) < 1:
-        raise Exception((
-            "Failed to identify I2C device whilst scanning for "
-            "SSD1306 screen."
-        ))
-    
-    i2c_address = i2c_devs[0]
+def init():
+    global sensor
 
-    print(f"Found SSD1306 screen on I2C address {i2c_address}!")
+    try:
 
-    return i2c
+        i2c = SoftI2C(scl=Pin(SCL), sda=Pin(SDA))
+        i2c_devs = i2c.scan()
 
-def test():
-    i2c = get_css811()
-    s = CCS811(i2c)
-    time.sleep(1)
-    for x in range(20):
-        if not s.data_ready():
-            print("Waiting for data...")
-            time.sleep(5)
-            continue
-        print('eCO2: %d ppm, TVOC: %d ppb' % (s.eCO2, s.tVOC))
-        time.sleep(5)
+        if len(i2c_devs) < 1:
+            raise Exception((
+                "Failed to identify I2C device whilst scanning for "
+                "CCS811 sensor."
+            ))
 
+        i2c_address = i2c_devs[0]
+
+        print(f"Found CCS811 sensor on I2C address {i2c_address}!")
+
+        sensor = CCS811(i2c)
+
+        print("Successfully initialized CCS811 sensor!")
+
+    except Exception as err:
+
+        msg = "Failed to initialize CCS811 sensor..."
+
+        utils.log_error(msg, err)
+
+def read():
+    global CURRENT_READING, sensor
+
+    while not sensor.data_ready():
+        print("Waiting for data...")
+        time.sleep(2)
+        continue
+
+    print('eCO2: %d ppm, TVOC: %d ppb' % (sensor.eCO2, sensor.tVOC))
+
+# import ccs811; ccs811.init(); ccs811.read();

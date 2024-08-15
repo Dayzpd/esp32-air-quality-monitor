@@ -94,8 +94,8 @@ class CCS811:
 sensor = None
 CURRENT_READING = {}
 
-SCL = micropython.const(48)
-SDA = micropython.const(47)
+SCL = micropython.const(1)
+SDA = micropython.const(2)
 
 def init():
     global sensor

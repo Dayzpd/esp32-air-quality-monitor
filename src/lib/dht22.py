@@ -7,7 +7,7 @@ import utils
 
 sensor = None
 
-DATA_PIN = micropython.const(1)
+DATA_PIN = micropython.const(14)
 
 def init():
     global sensor

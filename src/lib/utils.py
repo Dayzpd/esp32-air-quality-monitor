@@ -1,5 +1,6 @@
+import asyncio
+import binascii
 import sys
-
 
 def debug(ev, filt):
     for k in dir(ev):
@@ -22,3 +23,15 @@ def reload(mod):
     mod_name = mod.__name__
     del sys.modules[mod_name]
     exec("import {}".format(mod_name))
+
+def stringify_bytes_mac(addr: bytes):
+    string_addr = binascii.hexlify(addr).decode()
+
+    return ":".join(string_addr[i:i+2] for i in range(0, 12, 2))
+
+def wrap_async(func: callable):
+
+    def wrapper(*a, **kw):
+        return asyncio.run(func(*a, **kw))
+
+    return wrapper

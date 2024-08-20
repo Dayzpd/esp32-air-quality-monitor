@@ -140,8 +140,8 @@ class GroveMultichannelGasSensor:
         _debug(self.measure_voc)
         _debug(self.measure_co)
 
-SDA = Pin(32)
-SCL = Pin(33)
+SDA = Pin(47)
+SCL = Pin(48)
 
 sensor = None
 

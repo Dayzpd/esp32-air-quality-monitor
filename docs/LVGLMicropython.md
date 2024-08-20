@@ -28,7 +28,7 @@ The interesting aspect of the project is that he's automated process of building
 3. Flash the firmware:
 
     ```bash
-    $ ~/.espressif/python_env/idf5.2_py3.10_env/bin/python -m esptool --chip esp32s3 -p /dev/ttyUSB1 -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size 8MB --flash_freq 80m --erase-all 0x0 ~/workspaces/lvgl_micropython/build/lvgl_micropy_ESP32_GENERIC_S3-SPIRAM_OCT-8.bin
+    $ ~/.espressif/python_env/idf5.2_py3.12_env/bin/python -m esptool --chip esp32s3 -p /dev/ttyUSB1 -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size 8MB --flash_freq 80m --erase-all 0x0 ~/workspaces/lvgl_micropython/build/lvgl_micropy_ESP32_GENERIC_S3-SPIRAM_OCT-8.bin
     ```
 
     *Note: After the build, it will print to stdout the command you need to run for flashing to the board. You just need to specify the proper serial port which in my case was /dev/ttyUSB1.*
